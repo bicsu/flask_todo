@@ -16,7 +16,8 @@ migrate = Migrate(app,db)
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    todos = Todo.query.order_by(Todo.deadline.asc()).all()
+    return render_template('index.html', todos = todos)
     
 @app.route('/posts/new')
 def new():
@@ -24,9 +25,13 @@ def new():
 
 @app.route('/posts/create', methods=["POST"])
 def create():
-    todo = request.form.get('todo')
-    date = request.form.get('date')
-    post = Post(todo = todo, date = date)
+    # 사용자가 입력한 데이터 가져오기
+    todo = request.form['todo']
+    deadline = request.form.get('deadline')
+    # 가져온 데이터로 TODO 만들기
+    post = Todo(todo, deadline)
+    # ToDo DB에 저장하기
     db.session.add(post)
     db.session.commit()
-    return redirect('/posts/{}'.format(post.id))
+    # 어느 페이지로 이동할지 정하기
+    return redirect('/')
